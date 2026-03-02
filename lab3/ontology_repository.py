@@ -250,32 +250,32 @@ class Neo4jOntologyRepository:
 
 
 if __name__ == "__main__":
-    repo = Neo4jOntologyRepository("bolt://127.0.0.1:7687", "neo4j", "1112311123", "http://university-lab.com/")
+    repo = Neo4jOntologyRepository("bolt://127.0.0.1:7687", "neo4j", "1112311123", "http://lab.com/")
     
-    print("Очистка базы")
+    print("очистка базы")
     repo.clear_database()
     
-    print("Создание классов")
-    person = repo.create_class("Person", "Базовый класс")
-    student = repo.create_class("Student", "Студент", parent_uri=person['uri'])
-    course = repo.create_class("Course", "Курс")
+    print("создание классов")
+    person = repo.create_class("Person", "базовый класс")
+    student = repo.create_class("Student", "студент", parent_uri=person['uri'])
+    course = repo.create_class("Course", "курс")
     
-    print("Добавление атрибутов")
+    print("добавление атрибутов")
     repo.add_class_attribute(person['uri'], "age", "number")
     repo.add_class_object_attribute(student['uri'], "studies", course['uri'])
     
-    print("Создание объектов")
-    s1 = repo.create_object(student['uri'], "Иванов", attributes={"age": 20})
-    c1 = repo.create_object(course['uri'], "Базы данных")
+    print("создание объектов")
+    s1 = repo.create_object(student['uri'], "иванов", attributes={"age": 20})
+    c1 = repo.create_object(course['uri'], "лингвистика")
     repo.update_object(s1['uri'], relations_to_add={"studies": c1['uri']})
     
-    print("Проверка signature")
+    print("проверка signature")
     sig = repo.collect_signature(student['uri'])
     print(f"DatatypeProperties: {[dp['title'] for dp in sig['datatype_properties']]}")
     print(f"ObjectProperties: {[op['title'] for op in sig['object_properties']]}")
     
-    print("Получение онтологии")
+    print("получение онтологии")
     ont = repo.get_ontology()
-    print(f"Классов: {len(ont['classes'])}, Объектов: {len(ont['objects'])}")
+    print(f"классов: {len(ont['classes'])}, объектов: {len(ont['objects'])}")
     
     repo.close()
