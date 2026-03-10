@@ -5,8 +5,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')
 
-def get_chunks(text):
-    return re.split(r'(?<=[.!?])\s+', text)
+def get_chunks(text, mode='sentence'):
+    if mode == 'sentence':
+        return re.split(r'(?<=[.!?])\s+', text)
+    elif mode == 'word':
+        return re.findall(r'\w+', text)
+    elif mode == 'paragraph':
+        return [p for p in text.split('\n') if p.strip()]
+    elif mode == 'fixed_size':
+        words = text.split()
+        return [' '.join(words[i:i+10]) for i in range(0, len(words), 10)]
+    return [text]
 
 def get_embeddings(texts):
     return model.encode(texts)
@@ -19,15 +28,19 @@ def cos_compare(vec1, vec2):
 if __name__ == "__main__":
     text1 = "Косинусное сходство является метрикой, используемой для определения степени схожести. Оно измеряет косинус угла между векторами."
     text2 = "Мама мыла раму, а папа клеил обои."
+    text3 = "Мама мыла папу, а папа клеил обои."
     
-    chunks1 = get_chunks(text1)
-    chunks2 = get_chunks(text2)
+    print("sentence chunks:", get_chunks(text1, 'sentence'))
+    print("word chunks:", get_chunks(text1, 'word'))
+    print("paragraph chunks:", get_chunks(text1, 'paragraph'))
     
-    print("Фрагменты текста 1:", chunks1)
-    print("Фрагменты текста 2:", chunks2)
+    emb1 = get_embeddings(get_chunks(text1, 'sentence'))
+    emb2 = get_embeddings(get_chunks(text2, 'sentence'))
+    emb3 = get_embeddings(get_chunks(text3, 'sentence'))
     
-    emb1 = get_embeddings(chunks1)
-    emb2 = get_embeddings(chunks2)
-    
-    similarity = cos_compare(emb1[0], emb2[0])
-    print(f"\nСходство между первым предложением из текста 1 и текста 2: {similarity:.4f}")
+    similarity12 = cos_compare(emb1[0], emb2[0])
+    similarity13 = cos_compare(emb1[0], emb3[0])
+    similarity23 = cos_compare(emb2[0], emb3[0])
+    print(f"similarity12: {similarity12:.4f}")
+    print(f"similarity13: {similarity13:.4f}")
+    print(f"similarity23: {similarity23:.4f}")
